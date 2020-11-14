@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:xiaomi_temp_hum/data/device_data.dart';
+import 'package:xiaomi_temp_hum/data/devices_scan_data.dart';
 import 'package:xiaomi_temp_hum/presentation/app_routes.dart';
 import 'package:xiaomi_temp_hum/presentation/device/device_route_arguments.dart';
 
@@ -15,7 +15,7 @@ class HomeRoute extends StatelessWidget {
             padding: EdgeInsets.only(right: 20),
             child: GestureDetector(
               onTap: () {
-                Provider.of<DeviceData>(context).scanDevices();
+                Provider.of<DevicesScanData>(context).scanDevices();
               },
               child: Icon(
                 Icons.search,
@@ -27,7 +27,9 @@ class HomeRoute extends StatelessWidget {
       ),
       body: SafeArea(
         child: Container(
-          child: DevicesListWidget(),
+          child: Provider.of<DevicesScanData>(context).devices.length == 0
+              ? NoDevicesWidget()
+              : DevicesListWidget(),
         ),
       ),
     );
@@ -37,28 +39,40 @@ class HomeRoute extends StatelessWidget {
 class DevicesListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<DeviceData>(builder: (context, deviceData, child) {
-      return deviceData.devices.length == 0
-          ? Text('No devices')
-          : ListView.builder(
-              itemCount: deviceData.devices.length,
-              itemBuilder: (context, idx) {
-                return ListTile(
-                  title: Text(
-                    deviceData.devices[idx].name ??
-                        ' ' + deviceData.devices[idx].identifier,
+    return Consumer<DevicesScanData>(
+      builder: (context, deviceData, child) {
+        return ListView.builder(
+          itemCount: deviceData.devices.length,
+          itemBuilder: (context, idx) {
+            return ListTile(
+              title: Text(
+                deviceData.devices[idx].name ?? 'unknown device',
+              ),
+              subtitle: Text(deviceData.devices[idx].identifier),
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.deviceDetails,
+                  arguments: DeviceRouteArguments(
+                    deviceData.devices[idx],
                   ),
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.deviceDetails,
-                      arguments: DeviceRouteArguments(
-                        deviceData.devices[idx],
-                      ),
-                    );
-                  },
                 );
-              });
-    });
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class NoDevicesWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Center(
+        child: Text('No devices'),
+      ),
+    );
   }
 }

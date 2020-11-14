@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:xiaomi_temp_hum/data/device_data.dart';
+import 'package:xiaomi_temp_hum/data/devices_scan_data.dart';
 import 'package:xiaomi_temp_hum/data/device_details_data.dart';
 import 'package:xiaomi_temp_hum/presentation/app_routes.dart';
 import 'package:xiaomi_temp_hum/presentation/device/device_route.dart';
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => DeviceData(),
+      create: (context) => DevicesScanData(),
       child: MaterialApp(
         title: 'Xiaomi temperature',
         theme: ThemeData(
