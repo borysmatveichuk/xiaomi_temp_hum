@@ -30,17 +30,17 @@ class DeviceDetailsData extends ChangeNotifier {
 
   @override
   void dispose() {
-    super.dispose();
     Future.sync(() async {
       await _deviceStateSubs?.cancel();
       if (_deviceState != 'Disconnected') {
         await device.disconnectOrCancelConnection();
       }
     });
+    super.dispose();
   }
 
   Future<void> connectToDevice() async {
-    await device.connect(timeout: Duration(seconds: 10));
+    await device.connect();
     _getState();
     _getBatteryLevel();
   }

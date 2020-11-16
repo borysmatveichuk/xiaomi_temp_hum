@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,7 @@ class DevicesScanData extends ChangeNotifier {
       UnmodifiableListView(_devices.values);
 
   BleManager _blue = BleManager();
+  StreamSubscription _deviceScanSubs;
 
   DevicesScanData() {
     _init();
@@ -21,10 +23,23 @@ class DevicesScanData extends ChangeNotifier {
     print('client: ${_blue.toString()}');
   }
 
+  @override
+  void dispose() {
+    print('SCAN DISPOSE');
+    Future.sync(() async {
+      _deviceScanSubs?.cancel();
+      _blue.stopPeripheralScan();
+      _blue.destroyClient();
+    });
+    super.dispose();
+  }
+
   void scanDevices() async {
     _devices.clear();
     print("Start scan");
-    _blue.startPeripheralScan().listen((result) {
+
+    _deviceScanSubs = _blue.startPeripheralScan().listen((result) {
+      print('scan result: ${result.peripheral.identifier}');
       if (!result.peripheral.identifier.startsWith(BluConstants.VendorID)) {
         return;
       }
@@ -33,9 +48,13 @@ class DevicesScanData extends ChangeNotifier {
         notifyListeners();
       }
     }, onError: (Object error) {
-      print(error.toString());
+      print('Error: ${error.toString()}');
     }, onDone: () {
       print("DONE scanning!");
+    });
+
+    Timer(Duration(seconds: 10), () {
+      _deviceScanSubs.cancel();
     });
   }
 }
