@@ -4,14 +4,14 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_ble_lib/flutter_ble_lib.dart';
 import 'package:xiaomi_temp_hum/data/blue_constants.dart';
+import 'package:xiaomi_temp_hum/data/devices_scan_states.dart';
 
 class DevicesScanData extends ChangeNotifier {
   LinkedHashMap<String, Peripheral> _devices = LinkedHashMap();
-
-  UnmodifiableListView<Peripheral> get devices =>
-      UnmodifiableListView(_devices.values);
+  DevicesScanStates state = DevicesScanStates(UnmodifiableListView([]));
 
   BleManager _ble = BleManager();
+
   BleManager get bleManager => _ble;
 
   StreamSubscription _deviceScanSubs;
@@ -32,6 +32,8 @@ class DevicesScanData extends ChangeNotifier {
   }
 
   void scanDevices() async {
+    state = DevicesScanStates.scanning();
+    notifyListeners();
     _devices.clear();
     print("Start scan");
 
@@ -42,16 +44,21 @@ class DevicesScanData extends ChangeNotifier {
       }
       if (!_devices.containsKey(result.peripheral.identifier)) {
         _devices[result.peripheral.identifier] = result.peripheral;
+        state = DevicesScanStates(UnmodifiableListView(_devices.values));
         notifyListeners();
       }
     }, onError: (Object error) {
       print('Error: ${error.toString()}');
+      state = DevicesScanStates.error(error.toString());
+      notifyListeners();
     }, onDone: () {
       print("DONE scanning!");
     });
 
     Timer(Duration(seconds: 10), () {
       _deviceScanSubs.cancel();
+      state = DevicesScanStates(UnmodifiableListView(_devices.values));
+      notifyListeners();
     });
   }
 }
