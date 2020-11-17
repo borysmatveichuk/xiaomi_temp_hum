@@ -11,7 +11,9 @@ class DevicesScanData extends ChangeNotifier {
   UnmodifiableListView<Peripheral> get devices =>
       UnmodifiableListView(_devices.values);
 
-  BleManager _blue = BleManager();
+  BleManager _ble = BleManager();
+  BleManager get bleManager => _ble;
+
   StreamSubscription _deviceScanSubs;
 
   DevicesScanData() {
@@ -19,26 +21,21 @@ class DevicesScanData extends ChangeNotifier {
   }
 
   void _init() async {
-    await _blue.createClient();
-    print('client: ${_blue.toString()}');
+    await _ble.createClient();
+    print('client: ${_ble.toString()}');
   }
 
-  @override
-  void dispose() {
-    print('SCAN DISPOSE');
-    Future.sync(() async {
-      _deviceScanSubs?.cancel();
-      _blue.stopPeripheralScan();
-      _blue.destroyClient();
-    });
-    super.dispose();
+  void disposeResources() async {
+    await _deviceScanSubs?.cancel();
+    await _ble?.stopPeripheralScan();
+    await _ble?.destroyClient();
   }
 
   void scanDevices() async {
     _devices.clear();
     print("Start scan");
 
-    _deviceScanSubs = _blue.startPeripheralScan().listen((result) {
+    _deviceScanSubs = _ble.startPeripheralScan().listen((result) {
       print('scan result: ${result.peripheral.identifier}');
       if (!result.peripheral.identifier.startsWith(BluConstants.VendorID)) {
         return;

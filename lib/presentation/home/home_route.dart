@@ -7,31 +7,41 @@ import 'package:xiaomi_temp_hum/presentation/device/device_route_arguments.dart'
 class HomeRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Devices'),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: GestureDetector(
-              onTap: () {
-                Provider.of<DevicesScanData>(context).scanDevices();
-              },
-              child: Icon(
-                Icons.search,
-                size: 26,
+    return Consumer<DevicesScanData>(
+      builder: (context, deviceData, child) {
+        return WillPopScope(
+          onWillPop: () async {
+            deviceData.disposeResources();
+            return true;
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text('Devices'),
+              actions: [
+                Padding(
+                  padding: EdgeInsets.only(right: 20),
+                  child: GestureDetector(
+                    onTap: () {
+                      Provider.of<DevicesScanData>(context).scanDevices();
+                    },
+                    child: Icon(
+                      Icons.search,
+                      size: 26,
+                    ),
+                  ),
+                )
+              ],
+            ),
+            body: SafeArea(
+              child: Container(
+                child: Provider.of<DevicesScanData>(context).devices.length == 0
+                    ? NoDevicesWidget()
+                    : DevicesListWidget(),
               ),
             ),
-          )
-        ],
-      ),
-      body: SafeArea(
-        child: Container(
-          child: Provider.of<DevicesScanData>(context).devices.length == 0
-              ? NoDevicesWidget()
-              : DevicesListWidget(),
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -14,24 +14,32 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => DevicesScanData(),
-      child: MaterialApp(
-        title: 'Xiaomi temperature',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: HomeRoute(),
-        onGenerateRoute: (settings) {
-          if (settings.name == AppRoutes.deviceDetails) {
-            return _createDeviceDetailsRoute(settings);
-          } else {
-            return null;
-          }
-        },
+    return MaterialApp(
+      title: 'Xiaomi temperature',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      initialRoute: AppRoutes.home,
+      onGenerateRoute: (settings) {
+        if (settings.name == AppRoutes.deviceDetails) {
+          return _createDeviceDetailsRoute(settings);
+        } else if (settings.name == AppRoutes.home) {
+          return _createHomeRoute();
+        } else {
+          return null;
+        }
+      },
     );
+  }
+
+  _createHomeRoute() {
+    return MaterialPageRoute(builder: (BuildContext context) {
+      return ChangeNotifierProvider(
+        create: (context) => DevicesScanData(),
+        child: HomeRoute(),
+      );
+    });
   }
 
   _createDeviceDetailsRoute(RouteSettings settings) {
